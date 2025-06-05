@@ -2,7 +2,6 @@ package com.RonitCodes.MovieApi.Controller;
 
 import com.RonitCodes.MovieApi.Service.FileService;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,29 +14,28 @@ import java.io.InputStream;
 
 @RestController
 @RequestMapping("/file/")
+@CrossOrigin(origins = "*")
 public class FileController {
 
-    @Autowired
-    private FileService fileService;
+    private final FileService fileService;
+
+    public FileController(FileService fileService) {
+        this.fileService = fileService;
+    }
 
     @Value("${project.poster}")
     private String path;
 
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadFileHandler(@RequestPart MultipartFile file) throws IOException{
-
+    public ResponseEntity<String> uploadFileHandler(@RequestPart MultipartFile file) throws IOException {
         String uploadedFileName = fileService.uploadFile(path, file);
-        return ResponseEntity.ok("File uploaded successfully: " + uploadedFileName);
+        return ResponseEntity.ok("File uploaded : " + uploadedFileName);
     }
 
-    @GetMapping("/{fileName}")
-    public void serveFileHandler(@PathVariable String fileName, HttpServletResponse response ) throws IOException {
-
+    @GetMapping(value = "/{fileName}")
+    public void serveFileHandler(@PathVariable String fileName, HttpServletResponse response) throws IOException {
         InputStream resourceFile = fileService.getResourceFile(path, fileName);
-
         response.setContentType(MediaType.IMAGE_PNG_VALUE);
-
-        // To Convert into required response
         StreamUtils.copy(resourceFile, response.getOutputStream());
     }
 }
